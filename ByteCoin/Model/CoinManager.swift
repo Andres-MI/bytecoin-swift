@@ -14,7 +14,7 @@ struct CoinManager {
     let apiKey = "14595F6C-A0B3-47FA-8722-1323882FD32E"
     
     let currencyArray = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","ZAR"]
-
+    
     
     func getCoinPrice(for currency: String){
         performRequest(with: "\(baseURL)/\(currency)?apikey=\(apiKey)")
@@ -25,13 +25,25 @@ struct CoinManager {
             let session = URLSession(configuration: .default)
             let task = session.dataTask(with: url, completionHandler: {(data, response, error) in
                 if(error != nil){
-                    print(error)
+                    print(error!)
                 }
                 if let safeData = data {
-                    print(String(data: data!, encoding: String.Encoding.utf8) as String?)
+                    let price = parseJson(safeData)
+                    print(price!)
                 }
             })
             task.resume()
+        }
+    }
+    
+    func parseJson(_ data: Data) -> Double? {
+        let decoder = JSONDecoder()
+        do {
+            let decodedData = try decoder.decode(CoinData.self, from: data)
+            let price = decodedData.rate
+            return price
+        } catch {
+            return nil
         }
     }
 }
